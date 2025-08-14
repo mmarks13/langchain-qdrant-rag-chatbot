@@ -1,0 +1,35 @@
+# Main configuration (all options can be overridden via env vars)
+ingestion:
+  provider: "firecrawl"   # <— ("builtin" | "firecrawl")
+  mode: "crawl"             # <— ("crawl" | "map+scrape")
+  seeds_file: "seeds.txt"
+  include_subdomains: false            # ENV: INGEST_INCLUDE_SUBDOMAINS
+  max_depth: 10                        # ENV: INGEST_MAX_DEPTH
+  page_limit: 200                     # ENV: INGEST_PAGE_LIMIT
+  rate_limit_per_host_per_sec: 1    # ENV: INGEST_RATE_LIMIT
+  timeout_sec: 15                     # ENV: INGEST_TIMEOUT
+  allowed_mime_types: ["text/html", "application/pdf"]
+  chunk_size: 1000                    # ENV: CHUNK_SIZE
+  chunk_overlap: 200                  # ENV: CHUNK_OVERLAP
+
+vectorstore:
+  provider: "qdrant_local"            # ENV: VECTORSTORE_PROVIDER ("qdrant_local"|"qdrant_server")
+  path: "data/qdrant"                 # ENV: QDRANT_PATH
+  url: null                           # ENV: QDRANT_URL (for server mode)
+  api_key: null                       # ENV: QDRANT_API_KEY (for server/cloud)
+  collection: "rag_chunks"            # ENV: QDRANT_COLLECTION
+  distance: "cosine"                  # ENV: QDRANT_DISTANCE ("cosine"|"dot"|"euclid")
+  batch_size: 64                      # ENV: QDRANT_BATCH_SIZE
+
+embeddings:
+  model: "BAAI/bge-small-en-v1.5"     # ENV: EMBED_MODEL
+  normalize: true                     # ENV: EMBED_NORMALIZE
+
+llm:
+  provider: "huggingface"                    # ENV: LLM_PROVIDER ("groq"|"huggingface")
+  model: "openai/gpt-oss-20b"       # ENV: LLM_MODEL
+  temperature: 0.2                    # ENV: LLM_TEMPERATURE
+  max_output_tokens: 1024             # ENV: LLM_MAX_TOKENS
+
+retrieval:
+  k: 6                                # ENV: RETRIEVAL_K
