@@ -1,3 +1,13 @@
+---
+title: LangChain Qdrant RAG Chatbot
+emoji: 🧠
+colorFrom: yellow
+colorTo: blue
+sdk: docker
+pinned: false
+license: mit
+---
+
 # LangChain + Qdrant RAG Chatbot
 
 A complete RAG (Retrieval-Augmented Generation) chatbot that crawls websites, builds a vector database, and provides cited answers through a clean chat interface.
