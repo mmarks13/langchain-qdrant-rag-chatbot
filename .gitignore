@@ -9,5 +9,5 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
-app/__pycache__/__init__.cpython-312.pyc
+*.sqlite
+*.db
