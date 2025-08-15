@@ -12,13 +12,21 @@ export S3_DB_KEY="${S3_DB_KEY:-qdrant_database.tar.gz}"
 # CRITICAL: Set Chainlit to use /tmp as its app root
 export CHAINLIT_APP_ROOT="/tmp"
 
+# CRITICAL: Set Hugging Face cache to writable location
+export HF_HOME="/tmp/.cache"
+export HUGGINGFACE_HUB_CACHE="/tmp/.cache/huggingface/hub"
+export TRANSFORMERS_CACHE="/tmp/.cache/huggingface/transformers"
+
 echo "[startup] 🚀 Running on Hugging Face Spaces"
 echo "[startup] PORT=$PORT  QDRANT_PATH=$QDRANT_PATH"
 echo "[startup] S3_BUCKET=$S3_BUCKET"
 echo "[startup] CHAINLIT_APP_ROOT=$CHAINLIT_APP_ROOT"
+echo "[startup] HF_HOME=$HF_HOME"
 
-# Create qdrant directory (Chainlit will create its own dirs in /tmp)
+# Create qdrant directory and HF cache directories
 mkdir -p "$QDRANT_PATH"
+mkdir -p "/tmp/.cache/huggingface/hub"
+mkdir -p "/tmp/.cache/huggingface/transformers"
 
 # Function to download database from S3
 download_database_from_s3() {

@@ -19,6 +19,10 @@ RUN chmod +x /app/start.sh
 # Configure environment variables
 ENV QDRANT_PATH=/tmp/qdrant
 ENV PORT=7860
+ENV CHAINLIT_APP_ROOT=/tmp
+ENV HF_HOME=/tmp/.cache
+ENV HUGGINGFACE_HUB_CACHE=/tmp/.cache/huggingface/hub
+ENV TRANSFORMERS_CACHE=/tmp/.cache/huggingface/transformers
 
 EXPOSE 7860
 CMD ["/app/start.sh"]
