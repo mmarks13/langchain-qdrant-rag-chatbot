@@ -1,6 +1,9 @@
 import os, sys, asyncio
 import chainlit as cl
 
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 # Ensure repo root is importable when Chainlit runs this as a script
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -18,15 +21,27 @@ CFG_PATH = os.getenv("APP_CONFIG", "config/config.yaml")
 _RESOURCE: dict = {}
 
 def _init_resources():
+    print("[init] 🔧 Initializing resources...")
+
+    # Double-check environment loading
+    hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+    if hf_token:
+        print(f"[init] ✅ HF Token loaded: {hf_token[:10]}...")
+    else:
+        print("[init] ❌ No HuggingFace token found!")
+
     cfg = load_config(CFG_PATH)
+    print(f"[init] 📁 Config loaded from: {CFG_PATH}")
 
     # Embeddings (initialize once)
+    print("[init] 🔤 Loading embeddings...")
     embeddings = build_embeddings(
         cfg["embeddings"]["model"],
         cfg["embeddings"].get("normalize", True)
     )
 
     # Qdrant embedded or server — initialize once
+    print("[init] 🗄️  Connecting to Qdrant...")
     client = get_qdrant_client(cfg["vectorstore"])
     dim = len(embeddings.embed_query("probe"))
     ensure_collection(
@@ -38,9 +53,12 @@ def _init_resources():
     store = qdrant_store(client, cfg["vectorstore"]["collection"], embeddings)
 
     # LLM and RAG chain
+    print("[init] 🤖 Building LLM...")
     system_prompt = Path("prompts/system_prompt.md").read_text(encoding="utf-8")
     llm = build_llm(cfg["llm"])
     chain, retriever = build_rag_chain(embeddings, store, system_prompt, k=cfg["retrieval"]["k"])
+
+    print("[init] ✅ All resources initialized successfully!")
 
     return {
         "cfg": cfg,
@@ -55,6 +73,8 @@ def _init_resources():
 
 @cl.on_chat_start
 async def start():
+    print("[start] 🚀 Starting chat session...")
+
     # Reuse single resources per process (avoid multiple embedded clients)
     if not _RESOURCE:
         _RESOURCE.update(_init_resources())
@@ -62,7 +82,6 @@ async def start():
     cfg = _RESOURCE["cfg"]
     model = cfg["llm"]["model"]
     await cl.Message(content=f"Loaded `{CFG_PATH}`\nUsing {cfg['llm']['provider']} → {model}").send()
-
 
     # Attach handles for this session
     for k in ("cfg","embeddings","store","llm","chain","retriever","system_prompt"):
@@ -72,6 +91,8 @@ async def start():
 
 @cl.on_message
 async def main(message: cl.Message):
+    print(f"[message] 💬 Processing: {message.content[:50]}...")
+
     llm = cl.user_session.get("llm")
     retriever = cl.user_session.get("retriever")
     system_prompt = cl.user_session.get("system_prompt")
@@ -81,6 +102,7 @@ async def main(message: cl.Message):
         return
 
     # Retrieve & build prompt
+    print("[message] 🔍 Retrieving relevant documents...")
     docs = retriever.invoke(message.content)
     context, refs = format_docs_for_context(docs)
     prompt = ChatPromptTemplate.from_messages([
@@ -88,6 +110,8 @@ async def main(message: cl.Message):
         ("human", "Question: {question}\n\nCONTEXT:\n{context}\n\nReturn a concise answer with in-text citations e.g. [1], [2] ..."),
     ])
     prompt_value = prompt.format(question=message.content, context=context)
+
+    print("[message] 🤖 Generating response...")
 
     # Stream ONLY text, not the whole chunk object
     msg = cl.Message(content="")
