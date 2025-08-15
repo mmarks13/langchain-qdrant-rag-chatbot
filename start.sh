@@ -101,7 +101,4 @@ echo ""
 echo "[app] 🚀 Launching Chainlit on port $PORT..."
 echo "[app] 🌐 Your RAG chatbot will be available shortly!"
 
-# Change to a writable directory for Chainlit
-cd /tmp
-
-exec chainlit run /app/app/main.py --host 0.0.0.0 --port "$PORT"
+exec chainlit run app/main.py --host 0.0.0.0 --port "$PORT"

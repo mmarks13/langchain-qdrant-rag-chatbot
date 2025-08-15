@@ -4,6 +4,7 @@ import chainlit as cl
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
+
 # Ensure repo root is importable when Chainlit runs this as a script
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -15,6 +16,7 @@ from app.rag import (
 from langchain_core.prompts import ChatPromptTemplate
 from pathlib import Path
 
+# Use relative paths since we run from /app
 CFG_PATH = os.getenv("APP_CONFIG", "config/config.yaml")
 
 # ---- Single in-process resource cache (prevents embedded Qdrant lock) ----
