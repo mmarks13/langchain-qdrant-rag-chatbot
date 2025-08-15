@@ -9,11 +9,17 @@ export QDRANT_PATH="/tmp/qdrant"
 export S3_BUCKET="${S3_BUCKET_NAME:-}"
 export S3_DB_KEY="${S3_DB_KEY:-qdrant_database.tar.gz}"
 
+# Configure Chainlit to use writable directories
+export CHAINLIT_ROOT="/tmp"
+export CHAINLIT_SESSION_TIMEOUT=3600
+
 echo "[startup] 🚀 Running on Hugging Face Spaces"
 echo "[startup] PORT=$PORT  QDRANT_PATH=$QDRANT_PATH"
 echo "[startup] S3_BUCKET=$S3_BUCKET"
 
 mkdir -p "$QDRANT_PATH"
+mkdir -p "/tmp/.files"
+mkdir -p "/tmp/.chainlit"
 
 # Function to download database from S3
 download_database_from_s3() {
@@ -94,4 +100,8 @@ fi
 echo ""
 echo "[app] 🚀 Launching Chainlit on port $PORT..."
 echo "[app] 🌐 Your RAG chatbot will be available shortly!"
-exec chainlit run app/main.py --host 0.0.0.0 --port "$PORT"
+
+# Change to a writable directory for Chainlit
+cd /tmp
+
+exec chainlit run /app/app/main.py --host 0.0.0.0 --port "$PORT"
