@@ -3,27 +3,45 @@ set -euo pipefail
 
 export PYTHONUNBUFFERED=1
 export PORT="${PORT:-7860}"
-export QDRANT_PATH="${QDRANT_PATH:-/data/qdrant}"
+
+# Use Hugging Face Spaces persistent storage if available
+if [ "${SPACE_ID:-}" != "" ]; then
+  echo "[startup] 🚀 Running on Hugging Face Spaces"
+  export QDRANT_PATH="/data/qdrant"
+else
+  export QDRANT_PATH="${QDRANT_PATH:-./data/qdrant}"
+fi
 
 echo "[startup] PORT=$PORT  QDRANT_PATH=$QDRANT_PATH"
 mkdir -p "$QDRANT_PATH"
 
-# Run ingestion once (or if forced)
-NEEDS_INGEST=false
-if [ "${QDRANT_RESET:-}" = "true" ] || [ "${QDRANT_RESET:-}" = "1" ]; then
-  echo "[startup] QDRANT_RESET requested."
+# Simple control: RUN_INGESTION environment variable
+# Set to "true" in HF Spaces to run ingestion, "false" to skip
+if [ "${RUN_INGESTION:-false}" = "true" ]; then
+  echo "[startup] 🔧 RUN_INGESTION=true - running ingestion (THIS COSTS MONEY!)"
   NEEDS_INGEST=true
-elif [ -z "$(ls -A "$QDRANT_PATH" 2>/dev/null)" ]; then
-  echo "[startup] Qdrant path is empty; will run initial ingestion."
-  NEEDS_INGEST=true
+else
+  echo "[startup] ⏭️  RUN_INGESTION=${RUN_INGESTION:-false} - skipping ingestion"
+  NEEDS_INGEST=false
 fi
 
 if [ "$NEEDS_INGEST" = "true" ]; then
-  echo "[ingest] Starting ingestion..."
-  python -m ingest.ingest --config config/config.yaml ${QDRANT_RESET:+--reset} || {
-    echo "[ingest] Warning: ingestion exited non-zero; continuing to app."
+  echo ""
+  echo "💸 RUNNING COSTLY INGESTION..."
+  echo "   This will charge your Firecrawl account"
+  echo "   Database will be saved to persistent storage"
+  echo ""
+
+  python -m ingest.ingest --config config/config.yaml || {
+    echo "[ERROR] Ingestion failed!"
   }
+
+  echo "[ingest] ✅ Ingestion completed - saved to persistent storage"
+  echo "[ingest] 💡 Set RUN_INGESTION=false to avoid running again"
+else
+  echo "[startup] ✅ Skipping ingestion - using existing data"
 fi
 
-echo "[app] Launching Chainlit…"
+echo ""
+echo "[app] 🚀 Launching Chainlit..."
 exec chainlit run app/main.py --host 0.0.0.0 --port "$PORT"
