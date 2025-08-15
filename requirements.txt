@@ -1,5 +1,6 @@
 backports.tarfile==1.2.0
 beautifulsoup4==4.13.4
+boto3==1.35.0
 chainlit==2.6.8
 firecrawl-py==2.16.5
 h2==4.2.0

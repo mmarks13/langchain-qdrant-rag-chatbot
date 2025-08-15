@@ -2,4 +2,12 @@
 /.env
 /.env.example
 /.github
-/.venvdata/qdrant/
+/.venv
+/data/qdrant/
+/data/
+# Python bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+
+app/__pycache__/__init__.cpython-312.pyc
