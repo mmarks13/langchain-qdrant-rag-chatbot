@@ -2,4 +2,4 @@
 /.env
 /.env.example
 /.github
-/.venv
+/.venvdata/qdrant/
