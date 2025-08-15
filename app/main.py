@@ -22,6 +22,22 @@ CFG_PATH = os.getenv("APP_CONFIG", "config/config.yaml")
 # ---- Single in-process resource cache (prevents embedded Qdrant lock) ----
 _RESOURCE: dict = {}
 
+def _read_seeds(seeds_file: str) -> list[str]:
+    """Read and parse URLs from seeds file, filtering out comments and empty lines."""
+    try:
+        p = Path(seeds_file)
+        if not p.exists():
+            return []
+
+        seeds = [
+            line.strip()
+            for line in p.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+        return seeds
+    except Exception:
+        return []
+
 def _init_resources():
     print("[init] 🔧 Initializing resources...")
 
@@ -89,7 +105,21 @@ async def start():
     for k in ("cfg","embeddings","store","llm","chain","retriever","system_prompt"):
         cl.user_session.set(k, _RESOURCE[k])
 
-    await cl.Message(content="Ready. Ask me anything about your indexed docs.").send()
+    # Read seeds and create welcome message
+    seeds_file = cfg.get("ingestion", {}).get("seeds_file", "seeds.txt")
+    seeds = _read_seeds(seeds_file)
+
+    if seeds:
+        seeds_text = "\n".join(f"• {seed}" for seed in seeds)
+        welcome_msg = f"""Ready! I can answer questions about content from these sources:
+
+{seeds_text}
+
+Ask me anything about programs, policies, training, or announcements from these sites."""
+    else:
+        welcome_msg = "Ready. Ask me anything about your indexed docs."
+
+    await cl.Message(content=welcome_msg).send()
 
 @cl.on_message
 async def main(message: cl.Message):
