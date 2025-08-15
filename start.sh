@@ -9,18 +9,16 @@ export QDRANT_PATH="/tmp/qdrant"
 export S3_BUCKET="${S3_BUCKET_NAME:-}"
 export S3_DB_KEY="${S3_DB_KEY:-qdrant_database.tar.gz}"
 
+# CRITICAL: Set Chainlit to use /tmp as its app root
+export CHAINLIT_APP_ROOT="/tmp"
+
 echo "[startup] 🚀 Running on Hugging Face Spaces"
 echo "[startup] PORT=$PORT  QDRANT_PATH=$QDRANT_PATH"
 echo "[startup] S3_BUCKET=$S3_BUCKET"
+echo "[startup] CHAINLIT_APP_ROOT=$CHAINLIT_APP_ROOT"
 
-# Set Chainlit environment variables to use /tmp
-export CHAINLIT_ROOT="/tmp"
-export CHAINLIT_CONFIG_DIR="/tmp/.chainlit"
-
-# Create qdrant directory and chainlit directories
+# Create qdrant directory (Chainlit will create its own dirs in /tmp)
 mkdir -p "$QDRANT_PATH"
-mkdir -p "/tmp/.files"
-mkdir -p "/tmp/.chainlit"
 
 # Function to download database from S3
 download_database_from_s3() {
