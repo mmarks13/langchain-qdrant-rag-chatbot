@@ -13,13 +13,14 @@ echo "[startup] 🚀 Running on Hugging Face Spaces"
 echo "[startup] PORT=$PORT  QDRANT_PATH=$QDRANT_PATH"
 echo "[startup] S3_BUCKET=$S3_BUCKET"
 
+# Set Chainlit environment variables to use /tmp
+export CHAINLIT_ROOT="/tmp"
+export CHAINLIT_CONFIG_DIR="/tmp/.chainlit"
+
 # Create qdrant directory and chainlit directories
 mkdir -p "$QDRANT_PATH"
 mkdir -p "/tmp/.files"
 mkdir -p "/tmp/.chainlit"
-
-# Ensure they're writable
-chmod 755 /tmp/.files /tmp/.chainlit
 
 # Function to download database from S3
 download_database_from_s3() {
